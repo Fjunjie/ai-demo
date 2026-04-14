@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error 404</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /*height: 100vh;*/
+        }
+
+        .error-container {
+            text-align: center;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            font-size: 2em;
+        }
+
+        p {
+            color: #666;
+            font-size: 1.2em;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+<div class="error-container">
+    <h1>系统异常</h1>
+    <p>异常提示:<span th:text="${errorMessage}"></span></p>
+    <button id="closeBtn">关闭</button>
+</div>
+<script type="text/javascript">        document.addEventListener('DOMContentLoaded', function () {
+    // 监听关闭按钮的点击事件
+    document.getElementById('closeBtn').addEventListener('click', function () {
+        // 调用支付宝JSAPI关闭页面
+        AlipayJSBridge.call('close', {}, function (response) {
+            // 可选：处理关闭后的回调
+            // TODO 返回U订单
+        });
+    });
+});
+</script>
+</body>
+</html>

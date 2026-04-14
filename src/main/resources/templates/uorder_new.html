@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>确认支付</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin-top: 50px;
+        }
+        .order-description {
+            text-align: center;
+            color: #333;
+            font-size: 1.4em;
+            margin-bottom: 20px;
+        }
+        .header {
+            text-align: center;
+            color: #333;
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+        .form-group {
+            margin-bottom: 50px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .group-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 5px;
+            width: calc(50% - 10px);
+            box-sizing: border-box;
+            margin-top: 20px;
+        }
+        .item-label {
+            color: #333;
+            cursor: pointer;
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 1.2em;
+        }
+        .item-value {
+            color: #333;
+            font-weight: bold;
+            font-size: 1.4em;
+        }
+        .transfer-amount {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        .transfer-amount .item-label {
+            text-align: center;
+            color: #333;
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+        .transfer-amount .item-value {
+            text-align: center;
+            color: #333;
+            font-size: 2em;
+            font-weight: bold;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.2em;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            padding: 10px;
+            margin-top: 20px;
+            display: none;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="order-description" th:text="${order.produceDesc}"></div>
+    <div class="header" >订单总金额: <span th:text="${uOrder.fTotalMoney}"></span>元</div>
+    <form id="paymentForm" th:action="@{/createPayOrder}">
+        <div class="form-group">
+            <div class="group-item">
+                <span class="item-label">账户余额</span>
+                <span class="item-value" id="iPayNotUsedAmount" th:text="${agentFundInfo.iPayNotUsedAmount}"></span>元
+            </div>
+            <div class="group-item">
+                <span class="item-label">返利抵扣金额</span>
+                <span class="item-value" th:text="${uOrder.fRebateMoney}"></span>元
+            </div>
+        </div>
+        <div class="transfer-amount form-group">
+            <label class="item-label">待转账金额</label>
+            <span class="item-value" ><span id="realPay" th:text="${uOrder.fOrderRealMoney}"></span>元</span>
+        </div>
+        <div class="form-group" id="deductBalanceLabel">
+            <label for="deductBalance" >
+                <input type="checkbox" id="deductBalance"> 是否扣除余额
+            </label>
+        </div>
+        <button type="submit">提交支付</button>
+    </form>
+    <div id="successAlert" class="alert-success">
+        <button id="errorPay" style="background-color:red">付款遇到问题</button>
+        <button id="successPay">付款完成</button>
+    </div>
+</div>
+
+<script>
+    document.getElementById('deductBalanceLabel').addEventListener('click', function(event) {
+        var checkbox = document.getElementById('deductBalance');
+        checkbox.checked = !checkbox.checked; // 切换复选框状态
+        if(checkbox.checked){
+            // 处理余额
+            document.getElementById('realPay').innerText = [[${agentFundInfo.iPayNotUsedAmount>=uOrder.fOrderRealMoney?0:uOrder.fOrderRealMoney-agentFundInfo.iPayNotUsedAmount}]]
+            document.getElementById('iPayNotUsedAmount').innerText = [[${agentFundInfo.iPayNotUsedAmount>=uOrder.fOrderRealMoney?agentFundInfo.iPayNotUsedAmount-uOrder.fOrderRealMoney:0}]]
+        } else {
+            document.getElementById('realPay').innerText = [[${uOrder.fOrderRealMoney}]]
+            document.getElementById('iPayNotUsedAmount').innerText = [[${agentFundInfo.iPayNotUsedAmount}]]
+        }
+    });
+
+    document.getElementById('paymentForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        var deductBalance = document.getElementById('deductBalance').checked;
+        if (deductBalance) {
+            alert('正在扣除账户余额...');
+        } else {
+
+        }
+        setTimeout(function() {
+            document.getElementById('successAlert').style.display = 'block';
+        }, 2000);
+    });
+</script>
+</body>
+</html>

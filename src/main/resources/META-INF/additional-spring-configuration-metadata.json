@@ -1,0 +1,52 @@
+{"properties": [
+  {
+    "name": "alipay.appPrivateKeyPath",
+    "type": "java.lang.String",
+    "description": "A description for 'alipay.appPrivateKeyPath'"
+  },
+  {
+    "name": "alipay.gatewayUrl",
+    "type": "java.lang.String",
+    "description": "A description for 'alipay.gatewayUrl'"
+  },
+  {
+    "name": "alipay.appId",
+    "type": "java.lang.String",
+    "description": "A description for 'alipay.appId'"
+  },
+  {
+    "name": "alipay.appPubCertPath",
+    "type": "java.lang.String",
+    "description": "A description for 'alipay.appPubCertPath'"
+  },
+  {
+    "name": "alipay.certPath",
+    "type": "java.lang.String",
+    "description": "A description for 'alipay.certPath'"
+  },
+  {
+    "name": "alipay.rootCertPath",
+    "type": "java.lang.String",
+    "description": "A description for 'alipay.rootCertPath'"
+  },
+  {
+    "name": "alipay.format",
+    "type": "java.lang.String",
+    "description": "A description for 'alipay.format'"
+  },
+  {
+    "name": "alipay.signType",
+    "type": "java.lang.String",
+    "description": "A description for 'alipay.signType'"
+  },
+  {
+    "name": "alipay.charset",
+    "type": "java.lang.String",
+    "description": "A description for 'alipay.charset'"
+  },
+  {
+    "name": "alipay.gatewayUrl",
+    "type": "java.lang.String",
+    "description": "A description for 'alipay.gatewayUrl'"
+  }
+]}
