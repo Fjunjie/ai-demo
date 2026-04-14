@@ -1,14 +1,16 @@
 package com.cmwsp.zentransfer.dto.uorder;
 
+import java.math.BigDecimal;
+
 public class PaymentVerification {
-    private double iAmount;
+    private BigDecimal iAmount;
     private String cVoucherNo;
 
-    public double getiAmount() {
+    public BigDecimal getiAmount() {
         return iAmount;
     }
 
-    public void setiAmount(double iAmount) {
+    public void setiAmount(BigDecimal iAmount) {
         this.iAmount = iAmount;
     }
 

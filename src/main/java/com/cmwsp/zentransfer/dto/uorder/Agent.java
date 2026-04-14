@@ -2,19 +2,37 @@ package com.cmwsp.zentransfer.dto.uorder;
 
 public class Agent {
 
+    private String id;
+    private String agentId;
     private String cCode; // 客户编码
     private String cOutSysKey; // ERP编码
     private String cName; // 名称
     private String cTaxNo; // 税号
-    private long iAgentCategoryId; // 客户分类ID
-    private long iAgentLevelId; // 客户级别ID
-    private long iAgentIndustryId; // 客户行业ID
-    private long iAgentAreaId; // 客户区域ID
+    private Long iAgentCategoryId; // 客户分类ID
+    private Long iAgentLevelId; // 客户级别ID
+    private Long iAgentIndustryId; // 客户行业ID
+    private Long iAgentAreaId; // 客户区域ID
     private Address oAddress; // 地址信息对象
-    private long iAddressId; // 地址ID
+    private Long iAddressId; // 地址ID
     private String iCorporationContactsId; // 主联系人ID
     private User oCorporationContact; // 联系人信息
     private User oUser; // 登录用户
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getAgentId() {
+        return agentId;
+    }
+
+    public void setAgentId(String agentId) {
+        this.agentId = agentId;
+    }
 
     public String getcCode() {
         return cCode;
@@ -48,35 +66,35 @@ public class Agent {
         this.cTaxNo = cTaxNo;
     }
 
-    public long getiAgentCategoryId() {
+    public Long getiAgentCategoryId() {
         return iAgentCategoryId;
     }
 
-    public void setiAgentCategoryId(long iAgentCategoryId) {
+    public void setiAgentCategoryId(Long iAgentCategoryId) {
         this.iAgentCategoryId = iAgentCategoryId;
     }
 
-    public long getiAgentLevelId() {
+    public Long getiAgentLevelId() {
         return iAgentLevelId;
     }
 
-    public void setiAgentLevelId(long iAgentLevelId) {
+    public void setiAgentLevelId(Long iAgentLevelId) {
         this.iAgentLevelId = iAgentLevelId;
     }
 
-    public long getiAgentIndustryId() {
+    public Long getiAgentIndustryId() {
         return iAgentIndustryId;
     }
 
-    public void setiAgentIndustryId(long iAgentIndustryId) {
+    public void setiAgentIndustryId(Long iAgentIndustryId) {
         this.iAgentIndustryId = iAgentIndustryId;
     }
 
-    public long getiAgentAreaId() {
+    public Long getiAgentAreaId() {
         return iAgentAreaId;
     }
 
-    public void setiAgentAreaId(long iAgentAreaId) {
+    public void setiAgentAreaId(Long iAgentAreaId) {
         this.iAgentAreaId = iAgentAreaId;
     }
 
@@ -88,11 +106,11 @@ public class Agent {
         this.oAddress = oAddress;
     }
 
-    public long getiAddressId() {
+    public Long getiAddressId() {
         return iAddressId;
     }
 
-    public void setiAddressId(long iAddressId) {
+    public void setiAddressId(Long iAddressId) {
         this.iAddressId = iAddressId;
     }
 

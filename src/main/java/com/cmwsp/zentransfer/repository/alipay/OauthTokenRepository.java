@@ -11,7 +11,9 @@ import java.util.Optional;
 public interface OauthTokenRepository extends JpaRepository<OauthToken, String> {
   Optional<OauthToken> findBySessionId(String sessionId);
 
-    Optional<OauthToken> findFirstByUserIdOrderByCreatedAtDesc(String userId);
+  Optional<OauthToken> findFirstByAuthCode(String authCode);
+
+
 
 
 }

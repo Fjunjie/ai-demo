@@ -20,8 +20,10 @@ WORKDIR /app
 # 从构建阶段复制打包好的 jar 文件到新创建的目录中
 COPY --from=build /workspace/target/zentransfer-0.0.1-SNAPSHOT.jar /app
 
+ENV TZ=Asia/Shanghai
+
 # 暴露 8087 端口
-EXPOSE 8087
+EXPOSE 8089
 
 # 设置容器启动时运行的命令
-CMD ["java", "-jar", "zentransfer-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "-Dspring.profiles.active=prod","zentransfer-0.0.1-SNAPSHOT.jar"]

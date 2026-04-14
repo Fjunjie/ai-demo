@@ -1,12 +1,11 @@
 package com.cmwsp.zentransfer.utils.converter;
 
-import java.math.BigDecimal;
-
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Converter;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 
-import jakarta.persistence.AttributeConverter;
-import jakarta.persistence.Converter;
+import java.math.BigDecimal;
 
 @Converter(autoApply = true)
 public class MoneyConverter implements AttributeConverter<Money, BigDecimal> {

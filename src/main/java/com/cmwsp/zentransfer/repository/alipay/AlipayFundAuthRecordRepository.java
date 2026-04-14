@@ -9,9 +9,9 @@ import java.util.Optional;
 @Repository
 public interface AlipayFundAuthRecordRepository  extends JpaRepository<AlipayFundAuthRecord, String> {
 
-    Optional<AlipayFundAuthRecord> findByUserId(String userId);
-
     Optional<AlipayFundAuthRecord> findByOutBizNo(String outBizNo);
 
     Optional<AlipayFundAuthRecord> findFirstByUserIdAndStatus(String userId,String status);
+
+    Optional<AlipayFundAuthRecord> findFirstByUserIdOrderByCreatedAtDesc(String userId);
 }

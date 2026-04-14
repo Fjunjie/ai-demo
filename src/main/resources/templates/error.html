@@ -10,10 +10,6 @@
             margin: 0;
             padding: 0;
             background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            /*height: 100vh;*/
         }
 
         .error-container {
@@ -22,6 +18,19 @@
             border-radius: 8px;
             padding: 20px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            /* 使用Flexbox */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 80%; /* 限制最大宽度 */
+            margin: 0 auto; /* 水平居中 */
+        }
+
+        /* 小屏幕设备 */
+        @media (max-width: 768px) {
+            .error-container {
+                padding: 10px; /* 减小内边距 */
+            }
         }
 
         h1 {
@@ -47,22 +56,33 @@
         button:hover {
             background-color: #0056b3;
         }
+
     </style>
 </head>
 <body>
 <div class="error-container">
     <h1>系统异常</h1>
-    <p>异常提示:<span th:text="${errorMessage}"></span></p>
+    <p>异常提示:<span th:text="${error}"></span></p>
     <button id="closeBtn">关闭</button>
 </div>
 <script type="text/javascript">        document.addEventListener('DOMContentLoaded', function () {
     // 监听关闭按钮的点击事件
     document.getElementById('closeBtn').addEventListener('click', function () {
         // 调用支付宝JSAPI关闭页面
-        AlipayJSBridge.call('close', {}, function (response) {
-            // 可选：处理关闭后的回调
-            // TODO 返回U订单
-        });
+        try {
+            AlipayJSBridge.call('close', {}, function (response) {
+                // 可选：处理关闭后的回调
+                // TODO 返回U订单
+            });
+        } catch (e) {
+            console.log("非阿里页面关闭",e);
+        }
+        try {
+            // history.go(-1);
+            // window.location.replace('javascript: void(0)');
+        } catch (e) {
+            console.log("原生页面关闭",e);
+        }
     });
 });
 </script>
