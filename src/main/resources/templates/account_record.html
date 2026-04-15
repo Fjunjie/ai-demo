@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+ lang="zh">
+<link rel="stylesheet" th:href="@{/css/all.min.css}">
+<head>
+    <title>对账页面</title>
+    <style>
+        /* CSS 样式 */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+        }
+
+        header.header {
+            background-color: #001529;
+            color: white;
+            padding: 1rem; /* ... 其他样式 ... */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .auth-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .auth-link {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .auth-link i {
+            margin-right: 0.5rem;
+        }
+
+        .username {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .username span {
+            margin-left: 0.5rem;
+        }
+
+        h1.title {
+            margin: 0;
+            color: #ffffff;
+        }
+
+        main.content {
+            flex: 1;
+            overflow-y: auto; /* 当内容超出时显示垂直滚动条 */
+            overflow-x: auto; /* 当表格超出容器宽度时显示水平滚动条 */
+            padding: 2rem;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, .1);
+        }
+
+        label {
+            margin-right: 0.5rem; /* 添加右边距，使 label 和 input 之间有空隙 */
+        }
+
+        /* ... 其他样式 ... */
+
+        .filter-form {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+        }
+
+        .form-group-container {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .label {
+            font-size: 14px;
+            color: #333;
+            white-space: nowrap; /* 防止标签文字换行 */
+            width: 100px; /* 固定宽度以保持对齐 */
+            text-align: right; /* 文本右对齐 */
+            padding-right: 5px; /* 右侧内边距，使文本更靠近右侧边缘 */
+        }
+
+        .input-field, .select-field {
+            width: 200px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .form-group {
+                width: 100%;
+            }
+        }
+
+        /* 按钮样式 */
+        .button-container {
+            margin-top: 20px; /* 增加与上面容器的距离 */
+            display: flex;
+            justify-content: flex-end; /* 右对齐按钮 */
+            gap: 10px; /* 按钮之间的间距 */
+        }
+
+        .primary-button {
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .primary-button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .primary-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* ... 其他样式 ... */
+
+        table.data-table {
+            margin-top: 20px;
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table.data-table th,
+        table.data-table td {
+            padding: .5rem;
+            text-align: left;
+        }
+
+        table.data-table thead th {
+            background-color: #f0f2f5;
+            border-bottom: 1px solid #d9d9d9;
+        }
+
+        table.data-table tbody tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+
+        /* 新增 CSS 类 */
+        td.scrollable {
+            min-width: 60px; /* 设置最小宽度 */
+            overflow-x: auto; /* 当内容超出时显示水平滚动条 */
+            white-space: nowrap; /* 防止文字换行 */
+        }
+
+        /* 设置 table 的样式 */
+        table.data-table {
+            width: 100%; /* 设置表格宽度为100% */
+            border-collapse: collapse;
+            /*overflow-x: auto; !* 当表格超出容器宽度时显示水平滚动条 *!*/
+        }
+
+        /* 分页样式 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        .page-item {
+            margin: 0 5px;
+        }
+
+        .page-link {
+            display: block;
+            padding: 8px 16px;
+            color: #333;
+            text-decoration: none;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .page-item.active .page-link {
+            color: #fff;
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .page-link:hover {
+            color: #0056b3;
+            background-color: #e9ecef;
+            border-color: #dee2e6;
+        }
+
+        .page-link[aria-label="Previous"],
+        .page-link[aria-label="Next"] {
+            padding: 8px;
+        }
+
+        .page-item.disabled .page-link {
+            color: #6c757d;
+            pointer-events: none;
+            cursor: auto;
+        }
+
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            padding-top: 100px; /* Location of the box */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0, 0, 0); /* Fallback color */
+            background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 400px;
+            text-align: center;
+            border-radius: 5px;
+            color: #dc3545;
+        }
+
+        .close {
+            color: #aaaaaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #loadingIndicator {
+            color: #007bff;
+            font-size: 40px;
+            z-index: 1001;
+            text-align: center;
+        }
+    </style>
+    <!-- 引入flatpickr的CSS -->
+    <link rel="stylesheet" th:href="@{/css/flatpicker.min.css}">
+</head>
+<body>
+<header class="header">
+    <h1 class="title">对账页面</h1>
+    <div class="auth-actions">
+        <a sec:authorize="!isAuthenticated()" th:if="session.username == null " th:href="@{/toLogin}" class="auth-link">
+            <i class="fas fa-sign-in-alt"></i> 登录
+        </a>
+        <a sec:authorize="isAuthenticated()" th:if="session.username != null " th:href="@{/logout}" class="auth-link">
+            <i class="fas fa-sign-out-alt"></i> 注销
+        </a>
+        <span sec:authentication="name" class="username">用户名: <span sec:authentication="name" th:text="${session.username}"></span></span>
+    </div>
+</header>
+<main class="content">
+    <form class="filter-form" th:action="@{/reconciliation/list}" th:object="${params}" method="get">
+        <div class="form-group-container">
+            <div class="form-group">
+                <label class="label" for="agentName">商家:</label>
+                <input type="text" id="agentName" th:field="*{agentName}" class="input-field">
+            </div>
+            <div class="form-group">
+                <label class="label" for="orderNo">订单号:</label>
+                <input type="text" id="orderNo" th:field="*{orderNo}" class="input-field">
+            </div>
+            <div class="form-group">
+                <label class="label" for="payNo">支付单号:</label>
+                <input type="text" id="payNo" th:field="*{payNo}" class="input-field">
+            </div>
+            <div class="form-group">
+                <label class="label" for="batchTransId">支付宝唯一标识:</label>
+                <input type="text" id="batchTransId" th:field="*{batchTransId}" class="input-field">
+            </div>
+            <div class="form-group">
+                <label class="label" for="startDate">起始时间:</label>
+                <input type="text" id="startDate" th:field="*{startDateTime}" class="input-field">
+            </div>
+            <div class="form-group">
+                <label class="label" for="endDate">结束时间:</label>
+                <input type="text" id="endDate" th:field="*{endDateTime}" class="input-field">
+            </div>
+            <div class="form-group">
+                <label class="label" for="status">付款状态:</label>
+                <select id="status" name="status" th:field="*{status}" class="select-field">
+                    <option value="">请选择</option>
+                    <option value="0">未付款</option>
+                    <option value="1">已付款</option>
+                    <option value="2">付款失败</option>
+                </select>
+            </div>
+        </div>
+        <div class="button-container">
+            <button type="button" class="primary-button" id="validateAndSubmit">筛选</button>
+            <button type="button" id="resetBtn" class="primary-button">重置</button>
+            <button type="button" id="exportBtn" class="primary-button">导出</button>
+        </div>
+    </form>
+
+    <div id="overlay" style="display: none;"></div>
+    <div id="loadingIndicator" style="display: none;">下载中，请稍候...</div>
+
+
+    <div id="errorModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p id="modalMessage"></p>
+        </div>
+    </div>
+
+    <table class="data-table">
+        <thead>
+        <tr>
+            <th>序号</th>
+            <th>客商编码</th>
+            <th>客商名称</th>
+            <th>订单号(U订货)</th>
+            <th>订单金额</th>
+            <th>转账金额</th>
+            <th>返利抵扣</th>
+            <th>余额支付</th>
+            <th>支付状态</th>
+            <th>核销单号(U订货)</th>
+            <th>收款单号(U订货)</th>
+            <th>收款单日期(U订货)</th>
+            <th>收款单号(U8C)</th>
+            <th>支付宝唯一标识</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- 使用 rowspan 属性合并订单列 -->
+        <tr th:each="item,itemIndex:${data}">
+            <td class="scrollable" th:text="${itemIndex.index+1}"></td>
+            <td class="scrollable" th:text="${item.getUAgentId()}"></td>
+            <td class="scrollable" th:text="${item.getAgentName()}"></td>
+            <td class="scrollable" th:text="${item.getOrderNo()}"></td>
+            <td class="scrollable" th:text="${item.getTotalAmount()?:'0.00'}"></td>
+            <td class="scrollable" th:text="${item.getRealAmount()?:'0.00'}"></td>
+            <td class="scrollable" th:text="${item.getRebateAmount()?:'0.00'}"></td>
+            <td class="scrollable" th:text="${item.getBalanceAmount()?:'0.00'}"></td>
+            <td class="scrollable" th:text="${item.getPayStatusName()}"></td>
+            <td class="scrollable" th:text="${item.getVoucherNo()}"></td>
+            <td class="scrollable" th:text="${item.getPayeeNo()}"></td>
+            <td class="scrollable" th:text="${#temporals.format(item.getCreatedAt(),'yyyy-MM-dd HH:mm:ss')}"></td>
+            <td class="scrollable"></td>
+            <td class="scrollable" th:text="${item.getAlipayOrderNo()}"></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <nav>
+        <ul class="pagination">
+            <li th:classappend="${currentPage == 0 ? 'disabled' : ''}" class="page-item">
+                <a href="#"
+                   th:href="@{/reconciliation/list(page=${currentPage - 1},agentName=${params.agentName}, startDateTime=${params.startDateTime}, endDateTime=${params.endDateTime},payNo=${params.payNo},orderNo=${params.orderNo},status=${params.status})}"
+                   class="page-link"
+                   aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+
+            <!-- 显示第一页 -->
+            <th:block th:if="${totalPages == 0}">
+                <li th:classappend="${currentPage == 0 ? 'active' : ''}" class="page-item">
+                    <a href="#"
+                       th:href="@{/reconciliation/list(page=0,agentName=${params.agentName}, startDateTime=${params.startDateTime}, endDateTime=${params.endDateTime},payNo=${params.payNo},orderNo=${params.orderNo},status=${params.status})}"
+                       class="page-link">1</a>
+                </li>
+            </th:block>
+
+            <!-- 显示第一页 -->
+            <th:block th:if="${totalPages < 8}">
+                <!-- 当前页及前后各一页，但不超过总页数 -->
+                <li th:each="page : ${#numbers.sequence(0, totalPages)}"
+                    th:unless="${page < 0 or page > totalPages - 1}"
+                    th:classappend="${currentPage == page ? 'active' : ''}" class="page-item">
+                    <a href="#"
+                       th:href="@{/reconciliation/list(page=${page},agentName=${params.agentName}, startDateTime=${params.startDateTime}, endDateTime=${params.endDateTime},payNo=${params.payNo},orderNo=${params.orderNo},status=${params.status})}"
+                       class="page-link"
+                       th:text="${page+1}"></a>
+                </li>
+            </th:block>
+
+            <!-- 显示第一页 -->
+            <th:block th:if="${totalPages >= 8}">
+                <li th:classappend="${currentPage == 0 ? 'active' : ''}" class="page-item">
+                    <a href="#"
+                       th:href="@{/reconciliation/list(page=0,agentName=${params.agentName}, startDateTime=${params.startDateTime}, endDateTime=${params.endDateTime},payNo=${params.payNo},orderNo=${params.orderNo},status=${params.status})}"
+                       class="page-link">1</a>
+                </li>
+                <li class="page-item disabled" th:if="${currentPage >= 8}">
+                    <span class="page-link">...</span>
+                </li>
+                <li th:each="page : ${#numbers.sequence(0, 8)}"
+                    th:unless="${page < 0 or page > totalPages - 1}"
+                    th:classappend="${currentPage == page ? 'active' : ''}"
+                    th:if="${page != 0 and page != totalPages - 1 and currentPage < 8}"
+                    class="page-item">
+                    <a href="#"
+                       th:href="@{/reconciliation/list(page=${page},agentName=${params.agentName}, startDateTime=${params.startDateTime}, endDateTime=${params.endDateTime},payNo=${params.payNo},orderNo=${params.orderNo},status=${params.status})}"
+                       class="page-link"
+                       th:text="${page+1}"></a>
+                </li>
+                <li th:each="page : ${#numbers.sequence(currentPage - 4, currentPage + 4)}"
+                    th:unless="${page < 0 or page > totalPages - 1}"
+                    th:classappend="${currentPage == page ? 'active' : ''}"
+                    th:if="${page != 0 and page != totalPages - 1 and currentPage >= 8}"
+                    class="page-item">
+                    <a href="#"
+                       th:href="@{/reconciliation/list(page=${page},agentName=${params.agentName}, startDateTime=${params.startDateTime}, endDateTime=${params.endDateTime},payNo=${params.payNo},orderNo=${params.orderNo},status=${params.status})}"
+                       class="page-link"
+                       th:text="${page+1}"></a>
+                </li>
+                <li class="page-item disabled" th:if="${currentPage < totalPages - 6 or currentPage < 8}">
+                    <span class="page-link">...</span>
+                </li>
+                <li th:classappend="${currentPage == totalPages - 1 ? 'active' : ''}" class="page-item">
+                    <a href="#"
+                       th:href="@{/reconciliation/list(page=${totalPages - 1},agentName=${params.agentName}, startDateTime=${params.startDateTime}, endDateTime=${params.endDateTime},payNo=${params.payNo},orderNo=${params.orderNo},status=${params.status})}"
+                       class="page-link"
+                       th:text="${totalPages}"></a>
+                </li>
+            </th:block>
+
+            <li th:classappend="${currentPage == (totalPages - 1) ? 'disabled' : ''}" class="page-item">
+                <a href="#"
+                   th:href="@{/reconciliation/list(page=${currentPage + 1},agentName=${params.agentName}, startDateTime=${params.startDateTime}, endDateTime=${params.endDateTime},payNo=${params.payNo},orderNo=${params.orderNo},status=${params.status})}"
+                   class="page-link"
+                   aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+</main>
+
+<script th:src="@{/js/flatpicker.js}"></script>
+<script>
+
+    // 导出数据到CSV
+    document.getElementById('exportBtn').addEventListener('click', function () {
+        exportExcel();
+    });
+
+    function exportExcel() {
+        // 获取当前页面的数据
+        const url = '/reconciliation/export';
+        const params = new URLSearchParams({
+            agentName: document.getElementById('agentName').value,
+            startDateTime: document.getElementById('startDate').value,
+            endDateTime: document.getElementById('endDate').value,
+            payNo: document.getElementById('payNo').value,
+            orderNo: document.getElementById('orderNo').value,
+            batchTransId: document.getElementById('batchTransId').value,
+            status: document.getElementById('status').value
+        });
+        // 显示遮罩层和加载指示器
+        document.getElementById('overlay').style.display = 'flex';
+        document.getElementById('loadingIndicator').style.display = 'block';
+
+        fetch(url + '?' + params.toString(), { method: 'GET' })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                // 获取 Content-Disposition 头
+                const contentDisposition = response.headers.get('Content-Disposition');
+                const filename = parseFilenameFromContentDisposition(contentDisposition);
+                // 将 Blob 数据转换为 URL
+                return response.blob().then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename; // 使用解析出的文件名
+                    a.click();
+                    window.URL.revokeObjectURL(url); // 清理 URL
+                });
+            })
+            .catch(error => console.error('There has been a problem with your fetch operation:', error))
+            .finally(() => {
+            // 隐藏遮罩层和加载指示器
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('loadingIndicator').style.display = 'none';
+        });
+
+        function parseFilenameFromContentDisposition(contentDisposition) {
+            const matches = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+            if (matches != null && matches[1]) {
+                return decodeURIComponent(matches[1].replace('"', ''));
+            }
+            return 'unknown';
+        }
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+        flatpickr("#startDate", {
+            altInput: true,
+            altFormat: "Y-m-d  ", // 设置显示格式为“日 月 年”
+            dateFormat: "Y-m-d 00:00:00", // 设置提交格式为“年-月-日”
+            locale: {
+                firstDayOfWeek: 1, // 设置一周的第一天为周一
+                weekdays: {
+                    shorthand: ["日", "一", "二", "三", "四", "五", "六"],
+                    longhand: [
+                        "星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"
+                    ]
+                },
+                months: {
+                    shorthand: [
+                        "1月", "2月", "3月", "4月", "5月", "6月",
+                        "7月", "8月", "9月", "10月", "11月", "12月"
+                    ],
+                    longhand: [
+                        "一月", "二月", "三月", "四月", "五月", "六月",
+                        "七月", "八月", "九月", "十月", "十一月", "十二月"
+                    ]
+                }
+            }
+        });
+        flatpickr("#endDate", {
+            altInput: true,
+            altFormat: "Y-m-d  ", // 设置显示格式为“日 月 年”
+            dateFormat: "Y-m-d 23:59:59",
+            locale: {
+                firstDayOfWeek: 1,
+                weekdays: {
+                    shorthand: ["日", "一", "二", "三", "四", "五", "六"],
+                    longhand: [
+                        "星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"
+                    ]
+                },
+                months: {
+                    shorthand: [
+                        "1月", "2月", "3月", "4月", "5月", "6月",
+                        "7月", "8月", "9月", "10月", "11月", "12月"
+                    ],
+                    longhand: [
+                        "一月", "二月", "三月", "四月", "五月", "六月",
+                        "七月", "八月", "九月", "十月", "十一月", "十二月"
+                    ]
+                }
+            }
+        });
+    });
+
+    // 监听提交按钮点击事件
+    document.getElementById('validateAndSubmit').addEventListener('click', function () {
+        var startDate = document.getElementById('startDate').value;
+        var endDate = document.getElementById('endDate').value;
+
+        if ((startDate !== '' && endDate === '') || (startDate === '' && endDate !== '')) {
+            showError("开始时间和结束时间必须同时选择");
+        } else {
+            document.querySelector('.filter-form').submit();
+        }
+    });
+    // 监听重置按钮点击事件
+    document.getElementById('resetBtn').addEventListener('click', function () {
+        // 清空所有查询条件输入字段
+        document.getElementById('agentName').value = null;
+        document.getElementById('startDate').value = null;
+        document.getElementById('endDate').value = null;
+        document.getElementById('payNo').value = null;
+        document.getElementById('orderNo').value = null;
+        document.getElementById('batchTransId').value = null;
+        document.getElementById('status').value = null;
+
+
+        // 重新初始化日期选择器，如果需要的话
+        flatpickr("#startDate").clear();
+        flatpickr("#endDate").clear();
+
+        document.querySelector('.filter-form').submit();
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // 获取模态框元素
+        var modal = document.getElementById("errorModal");
+        var closeBtn = document.getElementsByClassName("close")[0];
+
+        // 当用户点击关闭按钮时，关闭模态框
+        closeBtn.onclick = function () {
+            modal.style.display = "none";
+        }
+
+        // 当用户点击任意位置之外的模态框时，关闭模态框
+        window.onclick = function (event) {
+            if (event.target === modal) {
+                modal.style.display = "none";
+            }
+        }
+    });
+
+    // 显示错误消息
+    function showError(message) {
+        var modalMessage = document.getElementById("modalMessage");
+        var modal = document.getElementById("errorModal");
+        modalMessage.textContent = message;
+        modal.style.display = "block";
+    }
+</script>
+
+</body>
+</html>

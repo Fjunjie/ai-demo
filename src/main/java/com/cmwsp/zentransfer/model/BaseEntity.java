@@ -16,9 +16,9 @@ public abstract class BaseEntity implements Serializable {
 
     // 实体ID
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-    @Column(updatable = false, nullable = false)
+    @GeneratedValue(generator = "jpa-uuid")
+    @GenericGenerator(name = "jpa-uuid", strategy = "uuid")
+    @Column(updatable = false, nullable = false, length = 32)
     private String id;
 
     @CreationTimestamp
@@ -36,5 +36,13 @@ public abstract class BaseEntity implements Serializable {
 
     public String getId() {
         return id;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 }

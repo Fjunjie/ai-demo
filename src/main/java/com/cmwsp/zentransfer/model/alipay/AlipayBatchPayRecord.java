@@ -5,6 +5,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @Data
 @Builder
@@ -33,4 +35,19 @@ public class AlipayBatchPayRecord extends BaseEntity {
      * 是否通知成功
      */
     private Boolean notifySuccess;
+
+    /**
+     * 付款用户id
+     */
+    private String payerId;
+
+    /**
+     * 收款账户信息
+     */
+    private String payeeId;
+
+    /**
+     * 实际转账金额
+     */
+    private BigDecimal transAmount;
 }

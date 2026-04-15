@@ -3,7 +3,6 @@ package com.cmwsp.zentransfer.service.impl;
 import com.alibaba.fastjson.JSONObject;
 import com.cmwsp.zentransfer.repository.alipay.AlipayFundAuthRecordRepository;
 import com.cmwsp.zentransfer.service.AlipayNotifyMessageHandler;
-import com.cmwsp.zentransfer.utils.JsonUtil;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -13,7 +12,7 @@ public class AlipayFundAuthStatusNotify implements AlipayNotifyMessageHandler<Ma
 
     private final AlipayFundAuthRecordRepository alipayFundAuthRecordRepository;
 
-    private final static String FUND_AUTH_NOTIFY = "alipay.fund.authorize.status.notify";
+    public final static String FUND_AUTH_NOTIFY = "alipay.fund.authorize.status.notify";
 
     public AlipayFundAuthStatusNotify(AlipayFundAuthRecordRepository alipayFundAuthRecordRepository) {
         this.alipayFundAuthRecordRepository = alipayFundAuthRecordRepository;

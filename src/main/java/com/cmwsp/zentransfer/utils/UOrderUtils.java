@@ -31,4 +31,24 @@ public class UOrderUtils {
 
         return DigestUtils.md5Hex(stringBuilder.toString()).toUpperCase();
     }
+
+    public static String sign(Map<String,String> params, String secret){
+        String[] keyArray = params.keySet().toArray(new String[0]);
+        Arrays.sort(keyArray);
+
+        // 拼接有序的参数名-值串
+        var stringBuilder = new StringBuilder();
+        stringBuilder.append(secret);
+        for (String key :keyArray)
+        {
+            stringBuilder.append(key).append(params.get(key));
+        }
+        stringBuilder.append(secret);
+
+        if(log.isDebugEnabled()){
+            log.debug("拼接参数:{}", stringBuilder);
+        }
+
+        return DigestUtils.md5Hex(stringBuilder.toString()).toUpperCase();
+    }
 }

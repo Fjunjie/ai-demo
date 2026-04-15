@@ -16,28 +16,33 @@
             padding: 20px;
             background-color: #f4f4f4;
         }
+
         .container {
             width: 100%;
             max-width: 800px;
             margin-top: 50px;
         }
+
         .order-description {
             text-align: center;
             color: #333;
             font-size: 1.4em;
             margin-bottom: 20px;
         }
+
         .header {
             text-align: center;
             color: #333;
             font-size: 1.8em;
             font-weight: bold;
         }
+
         .form-group {
             margin-bottom: 50px;
             display: flex;
             justify-content: space-between;
         }
+
         .group-item {
             display: flex;
             flex-direction: column;
@@ -50,6 +55,7 @@
             box-sizing: border-box;
             margin-top: 20px;
         }
+
         .item-label {
             color: #333;
             cursor: pointer;
@@ -57,11 +63,13 @@
             text-align: center;
             font-size: 1.2em;
         }
+
         .item-value {
             color: #333;
             font-weight: bold;
             font-size: 1.4em;
         }
+
         .transfer-amount {
             display: flex;
             flex-direction: column;
@@ -69,18 +77,21 @@
             justify-content: center;
             margin-bottom: 30px;
         }
+
         .transfer-amount .item-label {
             text-align: center;
             color: #333;
             font-size: 1.8em;
             font-weight: bold;
         }
+
         .transfer-amount .item-value {
             text-align: center;
             color: #333;
             font-size: 2em;
             font-weight: bold;
         }
+
         button {
             display: block;
             width: 100%;
@@ -92,78 +103,320 @@
             cursor: pointer;
             font-size: 1.2em;
         }
+
         button:hover {
             background-color: #0056b3;
         }
+
+        .alertBox {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .alertContent {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 400px;
+            text-align: center;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        }
+
+        #closeAlert {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #closeAlert:hover {
+            background-color: #0056b3;
+        }
+
         .alert-success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
             padding: 10px;
             margin-top: 20px;
             display: none;
+            justify-content: space-between;
+        }
+
+        /* Add this inside your existing <style> tag */
+        .payment-button {
+            display: inline-block;
+            margin: 10px;
+            padding: 12px 24px;
             font-size: 1.2em;
+            border: none;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        #successPay {
+            background-color: #28a745;
+            color: white;
+        }
+
+        #successPay:hover {
+            background-color: #218838;
+        }
+
+        #errorPay {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        #errorPay:hover {
+            background-color: #c82333;
         }
     </style>
 </head>
 <body>
-<div class="container">
+<div class="container" id="message">
     <div class="order-description" th:text="${order.produceDesc}"></div>
-    <div class="header" >订单总金额: <span th:text="${uOrder.fTotalMoney}"></span>元</div>
-    <form id="paymentForm" th:action="@{/createPayOrder}">
+    <div class="header">订单总金额: <span th:text="${uOrder.fTotalMoney}"></span>元</div>
+    <form id="paymentForm">
         <div class="form-group">
             <div class="group-item">
-                <span class="item-label">账户余额</span>
-                <span class="item-value" id="iPayNotUsedAmount" th:text="${agentFundInfo.iPayNotUsedAmount}"></span>元
+                <span class="item-label">使用账户余额</span>
+                <span class="item-value" id="balanceAmount">0</span>元
             </div>
             <div class="group-item">
-                <span class="item-label">返利抵扣金额</span>
+                <span class="item-label">使用返利金额</span>
                 <span class="item-value" th:text="${uOrder.fRebateMoney}"></span>元
             </div>
         </div>
         <div class="transfer-amount form-group">
             <label class="item-label">待转账金额</label>
-            <span class="item-value" ><span id="realPay" th:text="${uOrder.fOrderRealMoney}"></span>元</span>
+            <span class="item-value"><span id="realPay" th:text="${order.getAmount().getAmount()}"></span>元</span>
         </div>
-        <div class="form-group" id="deductBalanceLabel">
-            <label for="deductBalance" >
-                <input type="checkbox" id="deductBalance"> 是否扣除余额
+        <div class="form-group" id="deductBalanceDiv">
+            <label for="deductBalance" id="deductBalanceLabel">
+                是否扣减余额 <input type="checkbox" id="deductBalance">
             </label>
         </div>
         <button type="submit">提交支付</button>
     </form>
     <div id="successAlert" class="alert-success">
-        <button id="errorPay" style="background-color:red">付款遇到问题</button>
-        <button id="successPay">付款完成</button>
+        <button id="errorPay" class="payment-button">付款失败</button>
+        <button id="successPay" class="payment-button">付款成功</button>
+    </div>
+</div>
+<div id="customAlert" class="alertBox">
+    <div class="alertContent">
+        <p id="alertMessage">提示信息</p>
+        <button id="closeAlert">确定</button>
     </div>
 </div>
 
 <script>
-    document.getElementById('deductBalanceLabel').addEventListener('click', function(event) {
+    document.addEventListener("DOMContentLoaded", function () {
+        function isMobileDevice() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+                navigator.userAgent
+            );
+        }
+
+        var downloadUrl = "https://www.alipay.com/";
+        if (!isMobileDevice()) {
+            // 非移动设备，提供下载链接
+            document.getElementById("message").innerHTML =
+                '请在移动设备上访问本页面，或<a href="' + downloadUrl +
+                '">下载支付宝APP</a>。';
+        }
+        balanceCheck();
+        document.getElementById('deductBalance').addEventListener('change', function (event) {
+            console.log(event.target)
+            console.log(event.target === document.getElementById('deductBalance'))
+            console.log(event.target === document.getElementById('deductBalanceLabel'))
+            balanceCheck();
+        });
+    });
+
+    function queryPayResult(num) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', '/uorder/pay/result?payNo=[[${order.payNo}]]', true);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) { // 请求已完成
+                if (xhr.status >= 200 && xhr.status < 300) { // 成功响应
+                    try {
+                        if ("1" === xhr.responseText) {
+                            closePayAlert();
+                            showCustomAlert("支付成功");
+                            setTimeout(function () {
+                                // window.location.href = "[[${order.returnUrl}]]";
+                                window.location.href = "https://m.udinghuo.cn/pages/mobilePaySuccess.html";
+                            }, 5000);
+                        }
+                    } catch (e) {
+                        console.error('请求失败:', e);
+                        document.open();
+                        document.write(xhr.responseText);
+                        document.close();
+                    }
+                }
+            }
+        };
+        xhr.send();
+        if (num < 10) {
+            setTimeout(function () {
+                queryPayResult(num++)
+            }, 3000);
+        }
+    }
+
+    document.getElementById('successPay').addEventListener('click', function () {
+        // window.location.href = "[[${order.returnUrl}]]";
+        window.location.href = "https://m.udinghuo.cn/pages/mobilePaySuccess.html";
+    });
+
+    document.getElementById('errorPay').addEventListener('click', function () {
+        // document.getElementById('paymentForm').submit();
+        showCustomAlert("请关闭当前页面，重新发起支付交易");
+    });
+
+    document.getElementById('deductBalanceDiv').addEventListener('click', function (event) {
+        if (event.target === document.getElementById('deductBalance') || event.target === document.getElementById('deductBalanceLabel')) {
+            balanceCheck();
+        } else {
+            balanceCheck();
+        }
+    });
+
+
+    function balanceCheck() {
         var checkbox = document.getElementById('deductBalance');
         checkbox.checked = !checkbox.checked; // 切换复选框状态
-        if(checkbox.checked){
+        if (checkbox.checked) {
             // 处理余额
-            document.getElementById('realPay').innerText = [[${agentFundInfo.iPayNotUsedAmount>=uOrder.fOrderRealMoney?0:uOrder.fOrderRealMoney-agentFundInfo.iPayNotUsedAmount}]]
-            document.getElementById('iPayNotUsedAmount').innerText = [[${agentFundInfo.iPayNotUsedAmount>=uOrder.fOrderRealMoney?agentFundInfo.iPayNotUsedAmount-uOrder.fOrderRealMoney:0}]]
+            // 增加校验，如果金额待支付金额少于1元，则不默认扣除余额
+            if ([[${agentFundInfo.iPayNotUsedAmount>=order.getAmount().getAmount()?0:order.getAmount().getAmount()-agentFundInfo.iPayNotUsedAmount}]] < 1 &&
+                [[${agentFundInfo.iPayNotUsedAmount>=order.getAmount().getAmount()?0:order.getAmount().getAmount()-agentFundInfo.iPayNotUsedAmount}]] > 0) {
+                checkbox.checked = false;
+                showCustomAlert("自动扣除余额后的金额低于最低限额1元，不可使用余额支付")
+                return;
+            }
+            document.getElementById('realPay').innerText = [[${agentFundInfo.iPayNotUsedAmount>=order.getAmount().getAmount()?0:order.getAmount().getAmount()-agentFundInfo.iPayNotUsedAmount}]];
+            document.getElementById('balanceAmount').innerText = [[${agentFundInfo.iPayNotUsedAmount>=order.getAmount().getAmount()?order.getAmount().getAmount():agentFundInfo.iPayNotUsedAmount}]];
         } else {
-            document.getElementById('realPay').innerText = [[${uOrder.fOrderRealMoney}]]
-            document.getElementById('iPayNotUsedAmount').innerText = [[${agentFundInfo.iPayNotUsedAmount}]]
+            document.getElementById('realPay').innerText = [[${order.getAmount().getAmount()}]];
+            document.getElementById('balanceAmount').innerText = 0;
         }
-    });
+    }
 
-    document.getElementById('paymentForm').addEventListener('submit', function(event) {
+    document.getElementById('paymentForm').addEventListener('submit', function (event) {
         event.preventDefault();
+        // 混合支付就跳转到混合支付页面
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/uorder/toMixPay', true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) { // 请求已完成
+                if (xhr.status >= 200 && xhr.status < 300) { // 成功响应
+                    try {
+                        console.log('请求成功:', xhr.getResponseHeader("Content-Type"));
+                        if ("success" === xhr.responseText) {
+                            closePayAlert();
+                            showCustomAlert("支付成功")
+                            setTimeout(function () {
+                                // window.location.href = "[[${order.returnUrl}]]";
+                                window.location.href = "https://m.udinghuo.cn/pages/mobilePaySuccess.html";
+                            }, 5000);
+                        } else if (xhr.getResponseHeader("Content-Type").indexOf("text/html") !== -1) {
+                            document.open();
+                            document.write(xhr.responseText);
+                            document.close();
+                        } else {
+                            // 在这里处理返回的数据
+                            window.location.href = xhr.responseText; // 执行重定向
+                        }
+                    } catch (e) {
+                        console.error('请求失败:', e);
+                        document.open();
+                        document.write(xhr.responseText);
+                        document.close();
+                    }
+                } else if (xhr.status >= 300 && xhr.status < 400) { // 重定向
+                    var location = xhr.getResponseHeader('Location');
+                    if (location) {
+                        window.location.href = location; // 执行重定向
+                    } else {
+                        console.error('混合支付创建失败');
+                    }
+                } else { // 其他错误响应
+                    console.error('Error:', xhr.status);
+                    showCustomAlert("支付异常，请联系管理员:" + xhr.responseText);
+                }
+            }
+        };
         var deductBalance = document.getElementById('deductBalance').checked;
         if (deductBalance) {
-            alert('正在扣除账户余额...');
+            xhr.send(JSON.stringify({
+                "payNo": "[[${order.payNo}]]",
+                "orderNo": "[[${order.orderNo}]]",
+                "realAmount": [[${agentFundInfo.iPayNotUsedAmount>=order.getAmount().getAmount()?0:order.getAmount().getAmount()-agentFundInfo.iPayNotUsedAmount}]],
+                "rebateAmount": [[${uOrder.fRebateMoney}]],
+                "balanceAmount": [[${agentFundInfo.iPayNotUsedAmount>=order.getAmount().getAmount()?order.getAmount().getAmount():agentFundInfo.iPayNotUsedAmount}]],
+                "totalAmount": [[${uOrder.fTotalMoney}]],
+                "agentId": "[[${order.oAgentId}]]"
+            })); // 发送请求
         } else {
-
+            xhr.send(JSON.stringify({
+                "payNo": "[[${order.payNo}]]",
+                "orderNo": "[[${order.orderNo}]]",
+                "realAmount": [[${order.getAmount().getAmount()}]],
+                "rebateAmount": [[${uOrder.fRebateMoney}]],
+                "balanceAmount": "0.00",
+                "totalAmount": [[${uOrder.fTotalMoney}]],
+                "agentId": "[[${order.oAgentId}]]"
+            })); // 发送请求
         }
-        setTimeout(function() {
-            document.getElementById('successAlert').style.display = 'block';
+
+        showPayAlert("支付中，请等待...");
+
+        setTimeout(function () {
+            queryPayResult(1);
+        }, 1000)
+
+        setTimeout(function () {
+            document.getElementById('successAlert').style.display = 'flex';
         }, 2000);
+
+
     });
+
+    document.getElementById('closeAlert').addEventListener('click', function () {
+        document.getElementById('customAlert').style.display = 'none';
+    });
+
+    function showCustomAlert(message) {
+        document.getElementById('alertMessage').textContent = message;
+        document.getElementById('customAlert').style.display = 'block';
+    }
+
+    function showPayAlert(message) {
+        document.getElementById('alertMessage').textContent = message;
+        document.getElementById('customAlert').style.display = 'block';
+        document.getElementById('closeAlert').style.display = 'none';
+    }
+
+    function closePayAlert() {
+        document.getElementById('customAlert').style.display = 'none';
+        document.getElementById('closeAlert').style.display = 'block';
+    }
 </script>
 </body>
 </html>

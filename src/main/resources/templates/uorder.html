@@ -10,8 +10,8 @@
 <!--    <p id="message">检测设备中，请稍候...</p>-->
 <!--    <p>订单编号:<span th:text="${orderId}"></span></p>-->
 <!--    <p>回调地址:<span th:text="${redirectUrl}"></span></p>-->
-    <h1>${order.produceDesc}</h1>
-    <p>订单编号:<span th:text="${order.orderId}"></span></p>
+    <h1 th:text="${order.produceDesc}"></h1>
+    <p>订单编号:<span th:text="${order.orderNo}"></span></p>
     <p>订单金额:<span th:text="${order.amount}"></span></p>
     <button id="errorPay" style="background-color:red">付款遇到问题</button>
     <button id="successPay">付款完成</button>
@@ -22,7 +22,7 @@
         // 调用支付宝JSAPI关闭页面
         var alipayUrl =
                 "https://openauth.alipay.com/oauth2/publicAppAuthorize.htm?app_id=2021004137638718&scope=auth_user&" +
-                "&state="+ encodeURIComponent("[[${order.orderId}]]") + "&redirect_uri=[[${redirectUrl}]]";
+                "&state="+ encodeURIComponent("[[${order.payNo}]]") + "&redirect_uri=[[${redirectUrl}]]";
         var alipayAuthCodeUrl =
                 "alipays://platformapi/startapp?appId=20000067&url=" +
                 encodeURIComponent(alipayUrl);
@@ -30,7 +30,7 @@
       });
       // 监听付款遇到问题重新发起付款
       document.getElementById('successPay').addEventListener('click', function () {
-        window.location.href = [[${order.returnUrl}]];
+        window.location.href = "[[${order.returnUrl}]]";
       });
 
       document.addEventListener("DOMContentLoaded", function () {
@@ -40,44 +40,44 @@
           );
         }
 
-        // function redirectToAlipay() {
-        //   var alipayUrl =
-        //     "https://openauth.alipay.com/oauth2/publicAppAuthorize.htm?app_id=2021004137638718&scope=auth_user&" +
-        //       "&state="+ encodeURIComponent("[[${orderId}]]") + "&redirect_uri=[[${redirectUrl}]]";
-        //   var alipayAuthCodeUrl =
-        //     "alipays://platformapi/startapp?appId=20000067&url=" +
-        //     encodeURIComponent(alipayUrl);
-        //   var downloadUrl = "https://www.alipay.com/";
-        //
-        //   var isAndroid = /Android/i.test(navigator.userAgent);
-        //   var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-        //
-        //   if (isMobileDevice()) {
-        //     // 尝试打开支付宝客户端
-        //     window.location.href = alipayAuthCodeUrl;
-        //     setTimeout(function () {
-        //       // 如果5秒后还在当前页面，引导用户手动操作或下载支付宝
-        //       if (!document.hidden) {
-        //         if (isAndroid || isIOS) {
-        //           document.getElementById("message").innerHTML =
-        //             '如果未自动打开支付宝，请<a href="' +
-        //             alipayUrl +
-        //             '">点击这里</a>或<a href="' + downloadUrl +
-        //                   '">下载支付宝APP。</a>';
-        //         } else {
-        //           window.location.href = downloadUrl; // 非移动设备或无法识别设备，跳转到下载页
-        //         }
-        //       }
-        //     }, 5000);
-        //   } else {
-        //     // 非移动设备，提供下载链接
-        //     document.getElementById("message").innerHTML =
-        //       '请在移动设备上访问本页面，或<a href="' + downloadUrl +
-        //       '">下载支付宝APP</a>。';
-        //   }
-        // }
-        //
-        // redirectToAlipay();
+        function redirectToAlipay() {
+          var alipayUrl =
+            "https://openauth.alipay.com/oauth2/publicAppAuthorize.htm?app_id=2021004137638718&scope=auth_user&" +
+              "&state="+ encodeURIComponent("[[${order.payNo}]]") + "&redirect_uri=[[${redirectUrl}]]";
+          var alipayAuthCodeUrl =
+            "alipays://platformapi/startapp?appId=20000067&url=" +
+            encodeURIComponent(alipayUrl);
+          var downloadUrl = "https://www.alipay.com/";
+
+          var isAndroid = /Android/i.test(navigator.userAgent);
+          var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+          if (isMobileDevice()) {
+            // 尝试打开支付宝客户端
+            window.location.href = alipayAuthCodeUrl;
+            setTimeout(function () {
+              // 如果5秒后还在当前页面，引导用户手动操作或下载支付宝
+              if (!document.hidden) {
+                if (isAndroid || isIOS) {
+                  document.getElementById("message").innerHTML =
+                    '如果未自动打开支付宝，请<a href="' +
+                    alipayUrl +
+                    '">点击这里</a>或<a href="' + downloadUrl +
+                          '">下载支付宝APP。</a>';
+                } else {
+                  window.location.href = downloadUrl; // 非移动设备或无法识别设备，跳转到下载页
+                }
+              }
+            }, 5000);
+          } else {
+            // 非移动设备，提供下载链接
+            document.getElementById("message").innerHTML =
+              '请在移动设备上访问本页面，或<a href="' + downloadUrl +
+              '">下载支付宝APP</a>。';
+          }
+        }
+
+        redirectToAlipay();
       });
     </script>
   </body>

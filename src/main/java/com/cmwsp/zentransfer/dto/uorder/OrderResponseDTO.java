@@ -2,6 +2,7 @@ package com.cmwsp.zentransfer.dto.uorder;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -108,25 +109,28 @@ public class OrderResponseDTO {
     private String cPayStatusCode;
 
     // 订单总金额
-    private Double fTotalMoney;
+    private BigDecimal fTotalMoney;
 
     // 订单实付金额含运费(订货金额)
-    private Double fPayMoney;
+    private BigDecimal fPayMoney;
 
     // 订单应付金额含运费（发货金额）
-    private Double fRealMoney;
+    private BigDecimal fRealMoney;
 
     // 订单实付金额 (订货金额)
-    private Double fOrderPayMoney;
+    private BigDecimal fOrderPayMoney;
 
     // 订单应付金额含（发货金额）
-    private Double fOrderRealMoney;
+    private BigDecimal fOrderRealMoney;
 
     // 抵扣金额
-    private Double fRebateMoney;
+    private BigDecimal fRebateMoney;
 
     // 运费金额
-    private Double fReight;
+    private BigDecimal fReight;
+
+    // 已付金额
+    private BigDecimal paidMoney;
 
     // 创建人
     private User oSubmiter;
@@ -164,7 +168,6 @@ public class OrderResponseDTO {
     // 订单确认时间
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date dConfirmDate;
-
 
     public Agent getoAgent() {
         return oAgent;
@@ -422,51 +425,59 @@ public class OrderResponseDTO {
         this.cPayStatusCode = cPayStatusCode;
     }
 
-    public Double getfTotalMoney() {
+    public BigDecimal getfTotalMoney() {
         return fTotalMoney;
     }
 
-    public void setfTotalMoney(Double fTotalMoney) {
+    public void setfTotalMoney(BigDecimal fTotalMoney) {
         this.fTotalMoney = fTotalMoney;
     }
 
-    public Double getfPayMoney() {
+    public BigDecimal getfPayMoney() {
         return fPayMoney;
     }
 
-    public void setfPayMoney(Double fPayMoney) {
+    public void setfPayMoney(BigDecimal fPayMoney) {
         this.fPayMoney = fPayMoney;
     }
 
-    public Double getfRealMoney() {
+    public BigDecimal getfRealMoney() {
         return fRealMoney;
     }
 
-    public void setfRealMoney(Double fRealMoney) {
+    public void setfRealMoney(BigDecimal fRealMoney) {
         this.fRealMoney = fRealMoney;
     }
 
-    public Double getfOrderPayMoney() {
+    public BigDecimal getfOrderPayMoney() {
         return fOrderPayMoney;
     }
 
-    public void setfOrderPayMoney(Double fOrderPayMoney) {
+    public void setfOrderPayMoney(BigDecimal fOrderPayMoney) {
         this.fOrderPayMoney = fOrderPayMoney;
     }
 
-    public Double getfOrderRealMoney() {
+    public BigDecimal getfOrderRealMoney() {
         return fOrderRealMoney;
     }
 
-    public void setfOrderRealMoney(Double fOrderRealMoney) {
+    public void setfOrderRealMoney(BigDecimal fOrderRealMoney) {
         this.fOrderRealMoney = fOrderRealMoney;
     }
 
-    public Double getfReight() {
+    public BigDecimal getfRebateMoney() {
+        return fRebateMoney;
+    }
+
+    public void setfRebateMoney(BigDecimal fRebateMoney) {
+        this.fRebateMoney = fRebateMoney;
+    }
+
+    public BigDecimal getfReight() {
         return fReight;
     }
 
-    public void setfReight(Double fReight) {
+    public void setfReight(BigDecimal fReight) {
         this.fReight = fReight;
     }
 
@@ -566,11 +577,11 @@ public class OrderResponseDTO {
         this.dConfirmDate = dConfirmDate;
     }
 
-    public Double getfRebateMoney() {
-        return fRebateMoney;
+    public BigDecimal getPaidMoney() {
+        return paidMoney;
     }
 
-    public void setfRebateMoney(Double fRebateMoney) {
-        this.fRebateMoney = fRebateMoney;
+    public void setPaidMoney(BigDecimal paidMoney) {
+        this.paidMoney = paidMoney;
     }
 }

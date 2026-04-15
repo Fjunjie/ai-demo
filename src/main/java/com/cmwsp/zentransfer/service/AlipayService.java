@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Optional;
 
+import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
 import com.alipay.api.AlipayApiException;
@@ -224,7 +225,7 @@ public class AlipayService {
         try {
             var request = new AlipayFundBatchDetailQueryRequest();
             request.setBizContent(JsonUtil.convertToJsonString(batchDetailQueryDTO));
-            return alipayClient.execute(request);
+            return alipayClient.certificateExecute(request);
         } catch (JsonProcessingException e) {
             var response = new AlipayFundBatchDetailQueryResponse();
             response.setCode("40004");
@@ -260,13 +261,11 @@ public class AlipayService {
 
     public AlipaySystemOauthTokenResponse getAlipayAccessToken(AuthCallbackDTO authCallbackDTO, Cookie[] cookies) {
         try {
-
-            var request = new AlipaySystemOauthTokenRequest();
+            Optional<OauthToken> oauthToken = oauthTokenRepository.findFirstByAuthCode(authCallbackDTO.getAuthCode());
 
             // 从 Cookie 中读取 Session ID 如果有则到数据库中查找有没有对应的OAuthToken记录
             String sessionId = null;
-            // TODO 这个地方是回调，cookies是支付宝回调的信息，支付宝回调好像没有提供cookies
-            if(null != cookies){
+            if (null != cookies) {
                 for (Cookie cookie : cookies) {
                     if ("session_id".equals(cookie.getName())) {
                         sessionId = cookie.getValue();
@@ -275,45 +274,15 @@ public class AlipayService {
                 }
             }
 
-            Optional<OauthToken> oauthToken = null;
-
             // 先查看是否有授权信息
-
+            if(oauthToken.isPresent()){
+                return refreshToken(oauthToken);
+            }
 
             // 如果 Cookie 中有 Session ID 则到数据库中查找对应的 OAuthToken 记录
             if (sessionId != null) {
                 oauthToken = Optional.ofNullable(oauthTokenRepository.findBySessionId(sessionId).orElse(null));
-
-                // 获取当前时间
-                var currentDateTime = LocalDateTime.now();
-
-                // 首先根据 oauthToken 中保存的 authStart 和 expiresIn 计算出访问令牌的过期时间
-                var accessTokenExpiresAt = oauthToken.get().getAuthStart().plusSeconds(oauthToken.get().getExpiresIn());
-
-                // 如果访问令牌的过期时间在当前时间之前，说明访问令牌已经过期，需要使用刷新令牌刷新访问令牌
-                if (accessTokenExpiresAt.isBefore(currentDateTime)) {
-                    // 首先根据 oauthToken 中保存的 authStart 和 reExpiresIn 计算出刷新令牌的过期时间
-                    var refreshTokenExpiresAt = oauthToken.get().getAuthStart().plusSeconds(oauthToken.get().getReExpiresIn());
-
-                    // 如果刷新令牌的过期时间在当前时间之前，说明刷新令牌已经过期，需要重新授权
-                    if (refreshTokenExpiresAt.isBefore(currentDateTime)) {
-                        // 删除数据库中的 OAuthToken 记录
-                        oauthTokenRepository.delete(oauthToken.get());
-                    } else {
-                        // 使用刷新令牌刷新访问令牌
-                        request.setRefreshToken(oauthToken.get().getRefreshToken());
-                        request.setGrantType("refresh_token");
-                    }
-                } else {
-                    // 如果访问令牌没有过期，直接返回访问令牌
-                    var response = new AlipaySystemOauthTokenResponse();
-                    response.setAccessToken(oauthToken.get().getAccessToken());
-                    response.setExpiresIn(String.valueOf(oauthToken.get().getExpiresIn()));
-                    response.setReExpiresIn(String.valueOf(oauthToken.get().getReExpiresIn()));
-                    response.setAlipayUserId(oauthToken.get().getAlipayUserId());
-                    response.setUserId(oauthToken.get().getUserId());
-                    return response;
-                }
+                return refreshToken(oauthToken);
             }
 
             if (sessionId == null) {
@@ -326,6 +295,7 @@ public class AlipayService {
 
             // TODO: 从数据库中获取刷新令牌，如果有就设置，没有就不设置，对应的 grant_type 也需要修改
             // request.setRefreshToken("");
+            var request = new AlipaySystemOauthTokenRequest();
             request.setGrantType("authorization_code");
             request.setCode(authCallbackDTO.getAuthCode());
             var response = alipayClient.certificateExecute(request);
@@ -340,6 +310,7 @@ public class AlipayService {
                     .alipayUserId(response.getAlipayUserId())
                     .userId(response.getUserId())
                     .authStart(DateConverter.convertDateToLocalDateTime(response.getAuthStart()))
+                    .authCode(authCallbackDTO.getAuthCode())
                     .build());
 
             return response;
@@ -349,6 +320,41 @@ public class AlipayService {
             response.setMsg(e.getErrMsg());
             return response;
         }
+    }
+
+    private @Nullable AlipaySystemOauthTokenResponse refreshToken(Optional<OauthToken> oauthToken) {
+        var request = new AlipaySystemOauthTokenRequest();
+        // 获取当前时间
+        var currentDateTime = LocalDateTime.now();
+
+        // 首先根据 oauthToken 中保存的 authStart 和 expiresIn 计算出访问令牌的过期时间
+        var accessTokenExpiresAt = oauthToken.get().getAuthStart().plusSeconds(oauthToken.get().getExpiresIn());
+
+        // 如果访问令牌的过期时间在当前时间之前，说明访问令牌已经过期，需要使用刷新令牌刷新访问令牌
+        if (accessTokenExpiresAt.isBefore(currentDateTime)) {
+            // 首先根据 oauthToken 中保存的 authStart 和 reExpiresIn 计算出刷新令牌的过期时间
+            var refreshTokenExpiresAt = oauthToken.get().getAuthStart().plusSeconds(oauthToken.get().getReExpiresIn());
+
+            // 如果刷新令牌的过期时间在当前时间之前，说明刷新令牌已经过期，需要重新授权
+            if (refreshTokenExpiresAt.isBefore(currentDateTime)) {
+                // 删除数据库中的 OAuthToken 记录
+                oauthTokenRepository.delete(oauthToken.get());
+            } else {
+                // 使用刷新令牌刷新访问令牌
+                request.setRefreshToken(oauthToken.get().getRefreshToken());
+                request.setGrantType("refresh_token");
+            }
+        } else {
+            // 如果访问令牌没有过期，直接返回访问令牌
+            var response = new AlipaySystemOauthTokenResponse();
+            response.setAccessToken(oauthToken.get().getAccessToken());
+            response.setExpiresIn(String.valueOf(oauthToken.get().getExpiresIn()));
+            response.setReExpiresIn(String.valueOf(oauthToken.get().getReExpiresIn()));
+            response.setAlipayUserId(oauthToken.get().getAlipayUserId());
+            response.setUserId(oauthToken.get().getUserId());
+            return response;
+        }
+        return null;
     }
 
     // 根据 Access Token 获取用户信息

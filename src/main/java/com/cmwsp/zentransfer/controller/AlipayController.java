@@ -5,11 +5,12 @@ import com.alipay.api.AlipayApiException;
 import com.alipay.api.internal.util.AlipaySignature;
 import com.cmwsp.zentransfer.configuration.AlipayClientConfiguration;
 import com.cmwsp.zentransfer.dto.alipay.AuthCallbackDTO;
-import com.cmwsp.zentransfer.service.impl.AlipayNotificationEvent;
 import com.cmwsp.zentransfer.service.AlipayService;
 import com.cmwsp.zentransfer.service.PayService;
 import com.cmwsp.zentransfer.service.UOrderService;
+import com.cmwsp.zentransfer.service.impl.AlipayNotificationEvent;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,7 @@ import java.util.Map;
 
 @RestController()
 @RequestMapping("/alipay")
+@Slf4j
 public class AlipayController {
 
     private final AlipayService alipayService;
@@ -51,6 +53,9 @@ public class AlipayController {
             String paramName = parameterNames.nextElement();
             params.put(paramName, request.getParameter(paramName));
         }
+        if (log.isDebugEnabled()) {
+            log.debug("支付宝通知数据:{}", params);
+        }
         // 验签逻辑，确保通知来自支付宝
         boolean verifyResult = false;
         try {
@@ -59,7 +64,7 @@ public class AlipayController {
             e.printStackTrace();
         }
         if (verifyResult) {
-             publisher.publishEvent(new AlipayNotificationEvent(params.get("msg_method"), JSONObject.parseObject(params.get("biz_content"),Map.class)));
+             publisher.publishEvent(new AlipayNotificationEvent<>(params.get("msg_method"), JSONObject.parseObject(params.get("biz_content"),Map.class)));
             // 注意：此处的处理逻辑需要根据实际业务需求编写
             return new ResponseEntity<>("success", HttpStatus.OK);
         } else {
@@ -97,6 +102,7 @@ public class AlipayController {
     }
 
     @GetMapping("/pay")
+    @Deprecated
     public ModelAndView pay(@RequestParam("auth_code") String authCode,
                             @RequestParam("app_id") String appId,
                             @RequestParam("source") String source,
@@ -108,7 +114,11 @@ public class AlipayController {
                 .appId(appId)
                 .source(source)
                 .scope(scope).build();
-        var order = uOrderService.getOrderById(state);
+        var order = uOrderService.getOrderByPayNo(state);
+
+        if(order == null){
+            throw new RuntimeException("获取订单信息失败:"+state);
+        }
 
         // 1.获取用户信息
         var oauthInfo = alipayService.getAlipayAccessToken(authCallbackDTO, request.getCookies());
@@ -120,6 +130,36 @@ public class AlipayController {
         }
         // 3.支付渲染
         return payService.applyBatchPay(oauthInfo.getUserId(), order);
+    }
+
+    @GetMapping("/mixPay")
+    public ModelAndView mixPay(@RequestParam("auth_code") String authCode,
+                            @RequestParam("app_id") String appId,
+                            @RequestParam("source") String source,
+                            @RequestParam("scope") String scope,
+                            @RequestParam("state") String state,
+                            HttpServletRequest request) {
+        var authCallbackDTO = AuthCallbackDTO.builder()
+                .authCode(authCode)
+                .appId(appId)
+                .source(source)
+                .scope(scope).build();
+        var payOrder = payService.getPayOrderById(state);
+
+        if(payOrder == null){
+            throw new RuntimeException("获取混合支付订单信息失败:"+state);
+        }
+
+        // 1.获取用户信息
+        var oauthInfo = alipayService.getAlipayAccessToken(authCallbackDTO, request.getCookies());
+
+        // 2.确认是否授权
+        var fundAuthRecord = payService.checkUserFundAuth(oauthInfo.getUserId());
+        if (fundAuthRecord == null) {
+            return payService.applyAlipayFundAuth(oauthInfo.getUserId(), payOrder.getPayNo());
+        }
+        // 3.支付渲染
+        return payService.applyBatchPay(oauthInfo.getUserId(), payOrder);
     }
 
 }
